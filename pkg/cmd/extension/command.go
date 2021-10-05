@@ -132,7 +132,18 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 					if len(args) > 0 {
 						name = normalizeExtensionSelector(args[0])
 					}
-					return m.Upgrade(name, flagForce)
+					cs := io.ColorScheme()
+					err := m.Upgrade(name, flagForce)
+					if err != nil {
+						fmt.Fprintf(io.ErrOut, "%s %s", cs.FailureIcon(), err)
+						return cmdutil.SilentError
+					}
+					if name != "" {
+						fmt.Fprintf(io.Out, "%s Successfully upgraded %s extension", cs.SuccessIcon(), name)
+					} else {
+						fmt.Fprintf(io.Out, "%s Successfully upgraded extensions", cs.SuccessIcon())
+					}
+					return nil
 				},
 			}
 			cmd.Flags().BoolVar(&flagAll, "all", false, "Upgrade all extensions")
